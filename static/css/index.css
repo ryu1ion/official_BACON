@@ -1,0 +1,354 @@
+/* BACON project page styles --- adapted from the Nerfies template */
+
+:root {
+  --bacon-accent: #4a3a26;
+  --bacon-accent-soft: #b08868;
+  --bacon-tint: #faf6f1;
+  --bacon-border: #e9e1d4;
+  --bacon-best: #167848;
+  --bacon-best-bg: #eff8f4;
+  --bacon-mix-bg: #f8f8f8;
+}
+
+body {
+  font-family: 'Noto Sans', 'Google Sans', 'Lato', 'Source Sans Pro', sans-serif;
+  color: #222;
+}
+
+.hero {
+  background-color: #fff;
+}
+
+.hero-body {
+  padding: 3rem 1.5rem 2rem 1.5rem;
+}
+
+.publication-title {
+  font-family: 'Google Sans', 'Noto Sans', sans-serif;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 1.25rem !important;
+}
+
+.bacon-title-italic {
+  font-style: italic;
+  color: var(--bacon-accent);
+}
+
+.bacon-letter {
+  color: var(--bacon-accent);
+}
+
+.title-sub {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-weight: 500;
+  font-size: 0.78em;
+  color: #444;
+}
+
+.publication-authors {
+  margin: 0.5rem 0;
+}
+
+.publication-authors .author-block {
+  margin: 0 0.25rem;
+}
+
+.author-affil {
+  margin-top: 0.6rem;
+  color: #555;
+  line-height: 1.55;
+}
+
+.publication-links {
+  margin-top: 1.4rem;
+}
+
+.publication-links .link-block {
+  margin: 0.25rem;
+  display: inline-block;
+}
+
+.publication-links .button.is-dark {
+  background-color: var(--bacon-accent);
+  border-color: var(--bacon-accent);
+}
+
+.publication-links .button.is-dark:hover {
+  background-color: #2d2317;
+  border-color: #2d2317;
+}
+
+/* Teaser */
+.hero.teaser {
+  background: var(--bacon-tint);
+  border-top: 1px solid var(--bacon-border);
+  border-bottom: 1px solid var(--bacon-border);
+}
+
+.hero.teaser .subtitle {
+  margin-top: 1.2rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: #333;
+}
+
+/* Sections */
+.section {
+  padding: 3rem 1.5rem;
+}
+
+.section-tinted {
+  background-color: var(--bacon-tint);
+  border-top: 1px solid var(--bacon-border);
+  border-bottom: 1px solid var(--bacon-border);
+}
+
+.section .title.is-3 {
+  margin-bottom: 1.6rem;
+  color: var(--bacon-accent);
+  font-family: 'Google Sans', 'Noto Sans', sans-serif;
+  font-weight: 700;
+}
+
+.section .title.is-5 {
+  margin-top: 1.4rem;
+  margin-bottom: 0.6rem;
+  color: #2d2317;
+}
+
+.content p,
+.content ul {
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.content blockquote {
+  border-left: 4px solid var(--bacon-accent-soft);
+  background-color: #fffdf8;
+  font-size: 1.05rem;
+}
+
+.figure-caption {
+  text-align: center;
+  font-size: 0.92rem;
+  color: #555;
+  margin-top: 0.6rem;
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+
+/* Result cards */
+.result-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.result-card {
+  background: #fff;
+  border: 1px solid var(--bacon-border);
+  border-radius: 10px;
+  padding: 1.2rem 1rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.result-num {
+  font-family: 'Google Sans', 'Noto Sans', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--bacon-accent);
+  margin-bottom: 0.4rem;
+}
+
+.result-label {
+  font-size: 0.88rem;
+  color: #555;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Tables tab UI */
+.tables-intro {
+  margin: 0.5rem auto 1.4rem auto;
+  max-width: 720px;
+}
+
+.tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 1.4rem;
+}
+
+.tab-btn {
+  background: #fff;
+  color: var(--bacon-accent);
+  border: 1px solid var(--bacon-border);
+  border-radius: 9999px;
+  padding: 0.42rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab-btn:hover {
+  background: var(--bacon-tint);
+}
+
+.tab-btn.is-active {
+  background: var(--bacon-accent);
+  color: #fff;
+  border-color: var(--bacon-accent);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.is-active {
+  display: block;
+}
+
+/* Result tables */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--bacon-border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  color: #222;
+}
+
+.result-table thead th {
+  background: #f5efe5;
+  color: #2d2317;
+  font-weight: 700;
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid var(--bacon-border);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.result-table tbody td {
+  padding: 0.36rem 0.55rem;
+  border-bottom: 1px solid #f1ebe0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.result-table tbody td:first-child,
+.result-table tbody td:nth-child(2) {
+  text-align: left;
+  font-weight: 500;
+}
+
+.result-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.result-table tr.bacon-row {
+  background-color: var(--bacon-best-bg);
+}
+
+.result-table tr.mix-row {
+  background-color: var(--bacon-mix-bg);
+}
+
+.result-table tr.full-row td {
+  color: #777;
+  background-color: #fcfaf6;
+  font-style: italic;
+}
+
+.result-table td.best {
+  color: var(--bacon-best);
+  font-weight: 700;
+}
+
+.d-up {
+  color: var(--bacon-best);
+  font-size: 0.75em;
+  margin-left: 0.15rem;
+  font-weight: 600;
+}
+
+.best-color {
+  color: var(--bacon-best);
+  font-weight: 700;
+}
+
+.eff-table {
+  font-size: 0.95rem;
+}
+
+/* BibTeX */
+.bibtex-box {
+  background: #fff;
+  border: 1px solid var(--bacon-border);
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  color: #333;
+}
+
+/* Footer */
+.footer {
+  padding: 2rem 1.5rem;
+  background: #fff;
+  border-top: 1px solid var(--bacon-border);
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.footer a {
+  color: var(--bacon-accent);
+}
+
+/* Image polish */
+.image img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .publication-title {
+    font-size: 1.5rem;
+  }
+  .title-sub {
+    font-size: 0.95em;
+  }
+  .publication-links .button {
+    font-size: 0.9rem;
+  }
+  .hero-body {
+    padding: 2rem 1rem 1.5rem 1rem;
+  }
+  .section {
+    padding: 2rem 1rem;
+  }
+  .tab-btn {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.8rem;
+  }
+  .result-table {
+    font-size: 0.78rem;
+  }
+}

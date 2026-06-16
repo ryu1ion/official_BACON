@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="BACON: Boundary Attention Calibration for Multimodal KV Cache Compression. A plug-and-play method that calibrates observation-window attention with last-query evidence under intra-layer coherence and inter-layer persistence.">
+<meta name="keywords" content="BACON, KV cache compression, multimodal LLM, MLLM, attention, last-query attention, Qwen2-VL, LLaVA, InternVL3, SnapKV, PyramidKV, AdaKV, SparseMM">
+<meta property="og:title" content="BACON: Boundary Attention Calibration for Multimodal KV Cache Compression">
+<meta property="og:description" content="Plug-and-play KV cache compression for MLLMs that recovers boundary-emergent visual evidence diluted by observation window aggregation.">
+<meta property="og:type" content="website">
+<title>BACON: Boundary Attention Calibration for Multimodal KV Cache Compression</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥓%3C/text%3E%3C/svg%3E">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+<link rel="stylesheet" href="./static/css/index.css">
+</head>
+
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-2 publication-title">
+            <span class="bacon-title-italic">Last But Not Least</span>:<br>
+            <span class="bacon-letter">B</span>oundary
+            <span class="bacon-letter">A</span>ttention
+            <span class="bacon-letter">C</span>alibrati<span class="bacon-letter">ON</span><br>
+            <span class="title-sub">for Multimodal KV Cache Compression</span>
+          </h1>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><a href="#">Tianhao Chen</a><sup>1</sup>,</span>
+            <span class="author-block"><a href="#">Yuheng Wu</a><sup>1</sup>,</span>
+            <span class="author-block"><a href="#">Kelu Yao</a><sup>4</sup>,</span>
+            <span class="author-block"><a href="#">Xiaogang Xu</a><sup>3</sup>,</span>
+            <span class="author-block"><a href="#">Xiaobin Hu</a><sup>2,&dagger;</sup>,</span>
+            <span class="author-block"><a href="#">Dongman Lee</a><sup>1,&dagger;</sup></span>
+          </div>
+
+          <div class="is-size-6 publication-authors author-affil">
+            <span class="author-block"><sup>1</sup>KAIST</span>&nbsp;&nbsp;
+            <span class="author-block"><sup>2</sup>National University of Singapore</span>&nbsp;&nbsp;
+            <span class="author-block"><sup>3</sup>The Chinese University of Hong Kong</span>&nbsp;&nbsp;
+            <span class="author-block"><sup>4</sup>Zhejiang Laboratory</span><br>
+            <span class="author-block"><sup>&dagger;</sup>Corresponding authors</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2606.14782" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://github.com/ryu1ion/official_BACON" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code (coming soon)</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#bibtex" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-quote-left"></i></span>
+                  <span>BibTeX</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Teaser -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <figure class="image">
+        <img src="./static/images/vis.png" alt="Visual importance estimation under low budget on SnapKV: Observation window vs. BACON">
+      </figure>
+      <h2 class="subtitle has-text-centered">
+        Under aggressive KV-cache budgets, observation-window attention dilutes sparse visual evidence
+        and discards answer-critical tokens. <b>BACON</b> recovers this boundary-emergent evidence by
+        calibrating the window score with last-query attention under intra-layer coherence and
+        inter-layer persistence — without changing the compression operator or budget allocation.
+      </h2>
+    </div>
+  </div>
+</section>
+
+<!-- Abstract -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Multimodal Large Language Models (MLLMs) achieve strong vision-language reasoning,
+            but long visual contexts enlarge the KV cache and increase decoding latency.
+            Existing compression methods rely on observation-window attention for stable
+            token-importance estimation, yet this aggregation can dilute sparse visual evidence
+            and discard answer-critical tokens under aggressive compression. We identify
+            <i>last-query attention</i> as a complementary source for recovering such evidence,
+            but its answer-irrelevant signals can mislead retention.
+          </p>
+          <p>
+            We propose <b>BACON</b>, a plug-and-play method that calibrates observation-window
+            attention with last-query evidence and suppresses isolated noise via
+            <i>intra-layer coherence</i> and <i>inter-layer persistence</i>. Across diverse
+            benchmarks, models, budgets, and compression methods, BACON improves multimodal
+            KV compression by <b>7.5% on average</b> under the most aggressive budget, with
+            gains up to <b>30.9%</b>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Motivation -->
+<section class="section section-tinted">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Motivation</h2>
+
+    <div class="content has-text-justified">
+      <p>
+        Most attention-based KV cache compression methods rank cached tokens by an
+        <i>observation-window score</i> — the average attention each cached token receives
+        from the last few prompt queries. While this averaging stabilizes ranking, it can
+        also obscure sparse but answer-critical visual evidence.
+      </p>
+    </div>
+
+    <figure class="image">
+      <img src="./static/images/mot1.png" alt="Observation window dilutes sparse visual evidence; last query recovers it">
+    </figure>
+    <p class="figure-caption">
+      <b>Observation-window aggregation can dilute sparse visual evidence; the last query
+      recovers it.</b> (a) Under aggressive compression, SparseMM discards answer-critical
+      visual tokens. (b) The last prompt query is more sensitive than earlier queries to
+      answer-relevant tokens. (c) Last-query attention better matches the answer's attention
+      distribution over visual tokens than the window-averaged attention.
+    </p>
+
+    <br>
+
+    <figure class="image">
+      <img src="./static/images/mot2.png" alt="Why last-query attention needs calibration: intra-layer coherence and inter-layer persistence">
+    </figure>
+    <p class="figure-caption">
+      <b>Why last-query attention needs calibration.</b> (a) Only ~9% of last-query
+      high-attention tokens are true evidence; ~70% are answer-irrelevant noise. (b) True
+      evidence appears as a coherent local region; noise often appears as an isolated spike.
+      (c) True evidence remains salient across adjacent layers, while noise is less
+      consistent across layers.
+    </p>
+
+    <div class="content has-text-justified" style="margin-top: 1.5rem;">
+      <blockquote>
+        <i>The last query is not least for token retention: it reveals visual evidence missed
+        by observation-window aggregation, but this evidence should be calibrated against the
+        window signal before guiding token retention.</i>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- Method -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Method</h2>
+
+    <figure class="image">
+      <img src="./static/images/framework.png" alt="BACON framework overview">
+    </figure>
+    <p class="figure-caption">
+      <b>Overview of BACON.</b> Boundary evidence is extracted from observation-window and
+      last-query attention, calibrated with intra-layer coherence and inter-layer
+      persistence, and combined into an evidence-aware score for head-wise KV cache
+      compression.
+    </p>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="section section-tinted">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Results</h2>
+
+    <div class="result-cards">
+      <div class="result-card">
+        <h3 class="result-num">+7.5%</h3>
+        <p class="result-label">average gain under the most aggressive budget</p>
+      </div>
+      <div class="result-card">
+        <h3 class="result-num">+30.9%</h3>
+        <p class="result-label">peak improvement</p>
+      </div>
+      <div class="result-card">
+        <h3 class="result-num">+18.7</h3>
+        <p class="result-label">DocVQA, Qwen2-VL-7B, PyramidKV @ budget 64</p>
+      </div>
+      <div class="result-card">
+        <h3 class="result-num">+12.8</h3>
+        <p class="result-label">DocVQA, Qwen3-VL-30B-A3B, PyramidKV @ budget 64</p>
+      </div>
+    </div>
+
+    <div class="content has-text-justified" style="margin-top: 2rem;">
+      <h3 class="title is-5">Broad evaluation</h3>
+      <ul>
+        <li>
+          <b>Models</b>: LLaVA-NeXT-Mistral-7B, InternVL3-8B, Qwen2-VL-7B-Instruct,
+          Qwen3-VL-30B-A3B-Instruct, Mistral-7B-Instruct-v0.2, Llama-3.1-8B-Instruct.
+        </li>
+        <li>
+          <b>Compression backbones</b>: SnapKV, PyramidKV, AdaKV, SparseMM.
+        </li>
+        <li>
+          <b>Tasks</b>: image understanding (DocVQA, TextVQA, ChartQA, MMMU, TextCaps),
+          video understanding (VATEX, NextQA), GUI grounding (ScreenSpot), and long-context
+          text (LongBench).
+        </li>
+        <li>
+          <b>Budgets</b>: 256 / 128 / 64. BACON's gains are largest at the tightest budget,
+          where sparse visual evidence is most vulnerable.
+        </li>
+      </ul>
+
+      <h3 class="title is-5">Efficiency</h3>
+      <p>
+        BACON only refines within-head token scores during prefill; the compressed cache
+        size and the decoding procedure are unchanged. Accuracy gains come with negligible
+        runtime and memory overhead over the original compression method.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Experiment tables -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Experiment Tables</h2>
+    <p class="has-text-centered content tables-intro">
+      Across image, video, GUI, and long-context text benchmarks &mdash; spanning 4 model
+      families, 4 compression backbones, and 3 cache budgets &mdash; BACON consistently
+      improves compressed inference. Click a tab to explore.
+    </p>
+
+    <div class="tab-bar">
+      <button class="tab-btn is-active" data-tab="img">Image</button>
+      <button class="tab-btn" data-tab="model">Cross-Model</button>
+      <button class="tab-btn" data-tab="video">Video</button>
+      <button class="tab-btn" data-tab="gui">GUI</button>
+      <button class="tab-btn" data-tab="long">Long-Context</button>
+    </div>
+
+    <!-- Tab: Image Understanding -->
+    <div class="tab-panel is-active" data-tab="img">
+      <h3 class="title is-5 has-text-centered">Image Understanding &mdash; Qwen2-VL-7B</h3>
+      <p class="figure-caption">
+        Δ over Base. Best result per column is in <span class="best-color">green bold</span>.
+        Full-KV upper bound: DocVQA 93.7, ChartQA 71.3, MMMU 49.9, TextCaps 1.473.
+      </p>
+      <div class="table-scroll">
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th rowspan="2">Method</th><th rowspan="2">Variant</th>
+              <th colspan="3">DocVQA</th>
+              <th colspan="3">TextVQA</th>
+              <th colspan="3">ChartQA</th>
+              <th colspan="3">MMMU</th>
+              <th colspan="3">TextCaps</th>
+            </tr>
+            <tr>
+              <th>256</th><th>128</th><th>64</th>
+              <th>256</th><th>128</th><th>64</th>
+              <th>256</th><th>128</th><th>64</th>
+              <th>256</th><th>128</th><th>64</th>
+              <th>256</th><th>128</th><th>64</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">SnapKV</td><td>Base</td>
+              <td>88.6</td><td>82.1</td><td>70.1</td>
+              <td>80.6</td><td>77.0</td><td>70.3</td>
+              <td>70.0</td><td>69.6</td><td>66.2</td>
+              <td>49.9</td><td>49.8</td><td>49.6</td>
+              <td>1.361</td><td>1.141</td><td>0.787</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>91.8</td><td>83.9</td><td>70.9</td>
+              <td>82.6</td><td>81.0</td><td>73.5</td>
+              <td>70.0</td><td>70.2</td><td>67.2</td>
+              <td>49.9</td><td>49.9</td><td>49.7</td>
+              <td>1.470</td><td>1.332</td><td>0.919</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">93.1 <span class="d-up">+4.5</span></td><td class="best">91.5 <span class="d-up">+9.4</span></td><td class="best">85.5 <span class="d-up">+15.4</span></td>
+              <td class="best">83.1 <span class="d-up">+2.5</span></td><td class="best">82.6 <span class="d-up">+5.6</span></td><td class="best">78.2 <span class="d-up">+7.9</span></td>
+              <td class="best">70.2 <span class="d-up">+0.2</span></td><td class="best">70.2 <span class="d-up">+0.6</span></td><td class="best">69.6 <span class="d-up">+3.4</span></td>
+              <td class="best">49.9</td><td class="best">49.9 <span class="d-up">+0.1</span></td><td class="best">50.0 <span class="d-up">+0.4</span></td>
+              <td class="best">1.488 <span class="d-up">+0.13</span></td><td class="best">1.426 <span class="d-up">+0.29</span></td><td class="best">1.178 <span class="d-up">+0.39</span></td></tr>
+
+            <tr><td rowspan="3">PyramidKV</td><td>Base</td>
+              <td>83.4</td><td>75.6</td><td>60.5</td>
+              <td>77.7</td><td>74.9</td><td>66.8</td>
+              <td>71.1</td><td>68.9</td><td>65.2</td>
+              <td>49.9</td><td>49.8</td><td>49.6</td>
+              <td>1.147</td><td>0.993</td><td>0.600</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>85.0</td><td>77.5</td><td>61.3</td>
+              <td>80.9</td><td>77.2</td><td>69.4</td>
+              <td>71.0</td><td class="best">71.1</td><td>66.4</td>
+              <td>49.9</td><td>49.8</td><td>49.6</td>
+              <td>1.383</td><td>1.145</td><td>0.662</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">92.3 <span class="d-up">+8.9</span></td><td class="best">89.3 <span class="d-up">+13.7</span></td><td class="best">79.2 <span class="d-up">+18.7</span></td>
+              <td class="best">82.5 <span class="d-up">+4.8</span></td><td class="best">80.0 <span class="d-up">+5.1</span></td><td class="best">75.1 <span class="d-up">+8.3</span></td>
+              <td class="best">71.2 <span class="d-up">+0.1</span></td><td>70.6 <span class="d-up">+1.7</span></td><td class="best">69.2 <span class="d-up">+4.0</span></td>
+              <td class="best">49.9</td><td class="best">49.9 <span class="d-up">+0.1</span></td><td class="best">49.8 <span class="d-up">+0.2</span></td>
+              <td class="best">1.461 <span class="d-up">+0.31</span></td><td class="best">1.344 <span class="d-up">+0.35</span></td><td class="best">1.073 <span class="d-up">+0.47</span></td></tr>
+
+            <tr><td rowspan="3">AdaKV</td><td>Base</td>
+              <td>88.4</td><td>81.3</td><td>69.4</td>
+              <td>80.5</td><td>75.9</td><td>70.8</td>
+              <td>69.8</td><td>69.6</td><td>66.6</td>
+              <td>49.9</td><td>49.7</td><td>49.6</td>
+              <td>1.300</td><td>1.099</td><td>0.771</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>91.4</td><td>82.7</td><td>70.7</td>
+              <td>82.5</td><td>79.1</td><td>72.6</td>
+              <td>70.2</td><td>70.2</td><td>67.8</td>
+              <td>49.9</td><td class="best">49.9</td><td>49.6</td>
+              <td>1.454</td><td>1.271</td><td>0.874</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">93.0 <span class="d-up">+4.6</span></td><td class="best">91.1 <span class="d-up">+9.8</span></td><td class="best">86.2 <span class="d-up">+16.8</span></td>
+              <td class="best">82.8 <span class="d-up">+2.3</span></td><td class="best">81.2 <span class="d-up">+5.3</span></td><td class="best">78.5 <span class="d-up">+7.7</span></td>
+              <td class="best">70.2 <span class="d-up">+0.4</span></td><td class="best">70.2 <span class="d-up">+0.6</span></td><td class="best">69.6 <span class="d-up">+3.0</span></td>
+              <td class="best">49.9</td><td>49.8 <span class="d-up">+0.1</span></td><td class="best">49.8 <span class="d-up">+0.2</span></td>
+              <td class="best">1.473 <span class="d-up">+0.17</span></td><td class="best">1.371 <span class="d-up">+0.27</span></td><td class="best">1.144 <span class="d-up">+0.37</span></td></tr>
+
+            <tr><td rowspan="3">SparseMM</td><td>Base</td>
+              <td>93.1</td><td>91.4</td><td>87.3</td>
+              <td>82.6</td><td>82.1</td><td>76.9</td>
+              <td>70.2</td><td>70.0</td><td>69.6</td>
+              <td>49.8</td><td>49.8</td><td>49.6</td>
+              <td>1.481</td><td>1.427</td><td>1.044</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td class="best">93.9</td><td>92.9</td><td>88.6</td>
+              <td>82.5</td><td class="best">82.5</td><td>80.9</td>
+              <td>69.6</td><td>69.8</td><td class="best">70.8</td>
+              <td>49.8</td><td>49.8</td><td>49.7</td>
+              <td>1.480</td><td>1.456</td><td>1.303</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td>93.8 <span class="d-up">+0.7</span></td><td class="best">93.2 <span class="d-up">+1.8</span></td><td class="best">92.0 <span class="d-up">+4.7</span></td>
+              <td class="best">82.6</td><td>82.4 <span class="d-up">+0.3</span></td><td class="best">81.6 <span class="d-up">+4.7</span></td>
+              <td class="best">70.6 <span class="d-up">+0.4</span></td><td class="best">70.4 <span class="d-up">+0.4</span></td><td>70.2 <span class="d-up">+0.6</span></td>
+              <td class="best">49.9 <span class="d-up">+0.1</span></td><td class="best">49.8</td><td class="best">49.8 <span class="d-up">+0.2</span></td>
+              <td class="best">1.506 <span class="d-up">+0.03</span></td><td class="best">1.511 <span class="d-up">+0.08</span></td><td class="best">1.431 <span class="d-up">+0.39</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: Cross-Model -->
+    <div class="tab-panel" data-tab="model">
+      <h3 class="title is-5 has-text-centered">Cross-Model &mdash; PyramidKV at budget 64</h3>
+      <p class="figure-caption">
+        BACON generalizes from 7B MLLMs to InternVL3-8B and the 30B-scale MoE
+        Qwen3-VL-30B-A3B.
+      </p>
+      <div class="table-scroll">
+        <table class="result-table">
+          <thead>
+            <tr><th>Model</th><th>Variant</th><th>DocVQA</th><th>TextVQA</th><th>ChartQA</th><th>MMMU</th><th>TextCaps</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">LLaVA-NeXT-Mistral-7B</td><td>Base</td><td>43.8</td><td>55.7</td><td>38.6</td><td>34.7</td><td>0.436</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>45.6</td><td>57.8</td><td>39.1</td><td>34.7</td><td>0.505</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">52.4 <span class="d-up">+8.6</span></td>
+              <td class="best">59.8 <span class="d-up">+4.1</span></td>
+              <td class="best">39.9 <span class="d-up">+1.3</span></td>
+              <td class="best">34.8 <span class="d-up">+0.1</span></td>
+              <td class="best">0.505 <span class="d-up">+0.07</span></td></tr>
+
+            <tr><td rowspan="3">Qwen2-VL-7B</td><td>Base</td><td>60.5</td><td>66.8</td><td>65.2</td><td>49.6</td><td>0.600</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>61.3</td><td>69.4</td><td>66.4</td><td>49.6</td><td>0.662</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">79.2 <span class="d-up">+18.7</span></td>
+              <td class="best">75.1 <span class="d-up">+8.3</span></td>
+              <td class="best">69.2 <span class="d-up">+4.0</span></td>
+              <td class="best">49.8 <span class="d-up">+0.2</span></td>
+              <td class="best">1.073 <span class="d-up">+0.47</span></td></tr>
+
+            <tr><td rowspan="3">InternVL3-8B</td><td>Base</td><td>69.2</td><td>68.8</td><td>71.1</td><td>55.1</td><td>0.688</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>69.4</td><td>68.9</td><td>71.7</td><td>55.2</td><td>0.719</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">80.7 <span class="d-up">+11.5</span></td>
+              <td class="best">74.4 <span class="d-up">+5.6</span></td>
+              <td class="best">74.3 <span class="d-up">+3.2</span></td>
+              <td class="best">55.3 <span class="d-up">+0.2</span></td>
+              <td class="best">0.782 <span class="d-up">+0.09</span></td></tr>
+
+            <tr><td rowspan="3">Qwen3-VL-30B-A3B</td><td>Base</td><td>74.4</td><td>73.2</td><td>68.5</td><td>51.78</td><td>0.266</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>76.3</td><td>77.2</td><td>71.8</td><td class="best">52.11</td><td>0.370</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">87.2 <span class="d-up">+12.8</span></td>
+              <td class="best">79.3 <span class="d-up">+6.1</span></td>
+              <td class="best">73.2 <span class="d-up">+4.7</span></td>
+              <td>52.00 <span class="d-up">+0.22</span></td>
+              <td class="best">0.387 <span class="d-up">+0.12</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: Video -->
+    <div class="tab-panel" data-tab="video">
+      <h3 class="title is-5 has-text-centered">Video Understanding &mdash; Qwen2-VL-7B</h3>
+      <p class="figure-caption">
+        VATEX captioning (CIDEr / BLEU-4) and NextQA (WUPS). Best per column in
+        <span class="best-color">green bold</span>.
+      </p>
+      <div class="table-scroll">
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th rowspan="2">Method</th><th rowspan="2">Variant</th>
+              <th colspan="3">VATEX CIDEr</th>
+              <th colspan="3">VATEX BLEU-4</th>
+              <th colspan="3">NextQA WUPS</th>
+            </tr>
+            <tr>
+              <th>512</th><th>256</th><th>128</th>
+              <th>512</th><th>256</th><th>128</th>
+              <th>512</th><th>256</th><th>128</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">SnapKV</td><td>Base</td>
+              <td>48.14</td><td>46.51</td><td class="best">46.27</td>
+              <td>21.22</td><td>20.60</td><td>20.26</td>
+              <td>25.97</td><td>25.69</td><td>25.84</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>48.55</td><td>47.68</td><td>45.95</td>
+              <td>21.34</td><td>20.82</td><td>20.32</td>
+              <td>25.99</td><td>25.93</td><td>25.60</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">48.67</td><td class="best">48.02</td><td>46.02</td>
+              <td class="best">21.38</td><td class="best">21.26</td><td class="best">20.38</td>
+              <td class="best">26.15</td><td class="best">25.94</td><td class="best">26.02</td></tr>
+
+            <tr><td rowspan="3">AdaKV</td><td>Base</td>
+              <td>48.20</td><td>46.20</td><td>45.37</td>
+              <td>21.55</td><td>20.43</td><td>20.28</td>
+              <td>25.72</td><td>25.70</td><td>25.65</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>48.68</td><td>47.46</td><td class="best">45.39</td>
+              <td>21.22</td><td>20.78</td><td>20.34</td>
+              <td class="best">25.99</td><td class="best">26.01</td><td>25.86</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">48.82</td><td class="best">47.85</td><td>45.33</td>
+              <td class="best">21.55</td><td class="best">21.24</td><td class="best">20.54</td>
+              <td>25.96</td><td>25.95</td><td class="best">25.86</td></tr>
+
+            <tr><td rowspan="3">PyramidKV</td><td>Base</td>
+              <td>46.09</td><td>46.03</td><td>44.36</td>
+              <td>20.58</td><td class="best">20.29</td><td>19.26</td>
+              <td>25.88</td><td>25.69</td><td>25.63</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>46.13</td><td>45.67</td><td>44.50</td>
+              <td>20.48</td><td>20.29</td><td>19.55</td>
+              <td>25.87</td><td>25.72</td><td>25.52</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">46.57</td><td class="best">46.22</td><td class="best">45.70</td>
+              <td class="best">20.81</td><td>20.25</td><td class="best">19.70</td>
+              <td class="best">26.04</td><td class="best">25.80</td><td class="best">25.65</td></tr>
+
+            <tr><td rowspan="3">SparseMM</td><td>Base</td>
+              <td>47.91</td><td>47.16</td><td>46.12</td>
+              <td>20.79</td><td>20.24</td><td>19.77</td>
+              <td class="best">26.37</td><td>25.94</td><td>25.71</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>48.65</td><td>47.44</td><td>45.99</td>
+              <td>20.99</td><td>20.54</td><td>19.82</td>
+              <td>26.13</td><td>25.98</td><td>25.83</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">48.90</td><td class="best">47.57</td><td class="best">46.38</td>
+              <td class="best">21.28</td><td class="best">20.81</td><td class="best">20.03</td>
+              <td>26.33</td><td class="best">26.17</td><td class="best">26.07</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: GUI -->
+    <div class="tab-panel" data-tab="gui">
+      <h3 class="title is-5 has-text-centered">GUI Grounding &mdash; ScreenSpot (Qwen2-VL-7B)</h3>
+      <p class="figure-caption">Average accuracy across mobile / desktop / web text and icon subsets.</p>
+      <div class="table-scroll">
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th rowspan="2">Method</th><th rowspan="2">Variant</th>
+              <th colspan="2">Mobile Text</th>
+              <th colspan="2">Mobile Icon</th>
+              <th colspan="2">Desktop Text</th>
+              <th colspan="2">Desktop Icon</th>
+              <th colspan="2">Web Text</th>
+              <th colspan="2">Web Icon</th>
+              <th colspan="2">Average</th>
+            </tr>
+            <tr>
+              <th>128</th><th>64</th>
+              <th>128</th><th>64</th>
+              <th>128</th><th>64</th>
+              <th>128</th><th>64</th>
+              <th>128</th><th>64</th>
+              <th>128</th><th>64</th>
+              <th>128</th><th>64</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="3">SnapKV</td><td>Base</td>
+              <td>24.5</td><td>15.4</td><td>10.5</td><td>4.8</td><td>19.1</td><td>9.3</td>
+              <td>4.3</td><td>4.3</td><td>5.7</td><td>6.5</td><td>6.8</td><td>5.8</td>
+              <td>11.8</td><td>7.7</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>24.9</td><td>15.8</td><td class="best">10.8</td><td>4.8</td><td>19.6</td><td>10.8</td>
+              <td>4.3</td><td>4.3</td><td>6.1</td><td class="best">6.5</td><td>6.8</td><td>6.3</td>
+              <td>12.1</td><td>8.1</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">24.9</td><td class="best">15.8</td><td>10.7</td><td class="best">5.7</td><td class="best">21.1</td><td class="best">13.7</td>
+              <td class="best">4.3</td><td class="best">5.7</td><td class="best">7.0</td><td>6.4</td><td class="best">8.2</td><td class="best">6.3</td>
+              <td class="best">12.7</td><td class="best">9.0</td></tr>
+
+            <tr><td rowspan="3">AdaKV</td><td>Base</td>
+              <td>26.1</td><td>15.4</td><td>11.8</td><td>4.2</td><td>19.1</td><td>11.3</td>
+              <td>5.7</td><td>5.0</td><td>4.8</td><td>6.5</td><td>6.3</td><td>5.8</td>
+              <td>12.3</td><td>8.0</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>26.6</td><td>14.6</td><td>11.3</td><td>4.8</td><td class="best">20.1</td><td>11.3</td>
+              <td>5.7</td><td>5.0</td><td>5.7</td><td>5.7</td><td>6.3</td><td>6.3</td>
+              <td>12.6</td><td>8.0</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">26.6</td><td class="best">15.4</td><td class="best">12.0</td><td class="best">5.0</td><td>19.5</td><td class="best">13.9</td>
+              <td class="best">5.7</td><td class="best">5.0</td><td class="best">5.7</td><td class="best">6.7</td><td class="best">6.8</td><td class="best">6.3</td>
+              <td class="best">12.7</td><td class="best">8.7</td></tr>
+
+            <tr><td rowspan="3">PyramidKV</td><td>Base</td>
+              <td>24.5</td><td class="best">13.9</td><td>8.2</td><td>6.6</td><td>20.1</td><td>9.8</td>
+              <td>3.6</td><td>5.0</td><td>6.1</td><td>6.1</td><td>6.2</td><td>5.3</td>
+              <td>11.5</td><td>7.8</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>24.5</td><td>13.2</td><td>8.7</td><td class="best">7.0</td><td>19.1</td><td>10.3</td>
+              <td>3.6</td><td>5.0</td><td>6.5</td><td>6.1</td><td class="best">6.6</td><td>5.8</td>
+              <td>11.5</td><td>7.9</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">24.8</td><td>13.5</td><td class="best">8.9</td><td>6.7</td><td class="best">20.1</td><td class="best">10.3</td>
+              <td class="best">4.3</td><td class="best">5.7</td><td class="best">7.8</td><td class="best">6.2</td><td>6.3</td><td class="best">5.8</td>
+              <td class="best">12.0</td><td class="best">8.0</td></tr>
+
+            <tr><td rowspan="3">SparseMM</td><td>Base</td>
+              <td>22.7</td><td>15.8</td><td>9.2</td><td>4.4</td><td>18.6</td><td>9.8</td>
+              <td>4.6</td><td>4.3</td><td>7.0</td><td>4.5</td><td class="best">8.7</td><td>5.8</td>
+              <td>11.9</td><td>7.4</td></tr>
+            <tr class="mix-row"><td>+MixKV</td>
+              <td>21.5</td><td>14.6</td><td>10.2</td><td>4.4</td><td>17.0</td><td>10.3</td>
+              <td>2.9</td><td>4.3</td><td>7.4</td><td>3.9</td><td>8.2</td><td>5.8</td>
+              <td>11.2</td><td>7.2</td></tr>
+            <tr class="bacon-row"><td>+BACON</td>
+              <td class="best">22.7</td><td class="best">16.9</td><td class="best">10.2</td><td class="best">4.5</td><td class="best">19.6</td><td class="best">10.3</td>
+              <td class="best">4.9</td><td class="best">5.0</td><td class="best">7.6</td><td class="best">5.2</td><td>8.3</td><td class="best">8.2</td>
+              <td class="best">12.2</td><td class="best">8.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab: Long-Context Text -->
+    <div class="tab-panel" data-tab="long">
+      <h3 class="title is-5 has-text-centered">Long-Context Text &mdash; LongBench (Mistral-7B-Instruct-v0.2)</h3>
+      <p class="figure-caption">
+        Category averages and overall average; Full-KV reference 41.76.
+      </p>
+      <div class="table-scroll">
+        <table class="result-table">
+          <thead>
+            <tr><th>Budget</th><th>Method</th><th>Single-Doc QA</th><th>Multi-Doc QA</th><th>Summarization</th><th>Few-shot</th><th>Synthetic</th><th>Code</th><th>Avg.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="9">1024</td><td>SnapKV (Base)</td><td>34.38</td><td>28.22</td><td>25.21</td><td>64.94</td><td>45.23</td><td>46.11</td><td>40.06</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>34.41</td><td>28.22</td><td>25.34</td><td>66.17</td><td>44.53</td><td>46.30</td><td>40.25</td></tr>
+            <tr class="bacon-row"><td>+BACON</td><td class="best">35.49 <span class="d-up">+1.11</span></td><td class="best">28.56 <span class="d-up">+0.34</span></td><td class="best">25.69 <span class="d-up">+0.48</span></td><td class="best">67.00 <span class="d-up">+2.06</span></td><td class="best">45.29 <span class="d-up">+0.06</span></td><td class="best">46.44 <span class="d-up">+0.33</span></td><td class="best">40.85 <span class="d-up">+0.79</span></td></tr>
+
+            <tr><td>AdaKV (Base)</td><td>34.94</td><td>28.94</td><td>25.10</td><td>65.74</td><td>45.52</td><td>46.47</td><td>40.51</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>35.11</td><td>28.84</td><td>25.47</td><td>66.21</td><td>44.92</td><td>46.40</td><td>40.60</td></tr>
+            <tr class="bacon-row"><td>+BACON</td><td class="best">35.67 <span class="d-up">+0.73</span></td><td class="best">29.33 <span class="d-up">+0.39</span></td><td class="best">25.71 <span class="d-up">+0.61</span></td><td class="best">66.94 <span class="d-up">+1.20</span></td><td class="best">45.63 <span class="d-up">+0.11</span></td><td class="best">46.79 <span class="d-up">+0.32</span></td><td class="best">41.11 <span class="d-up">+0.60</span></td></tr>
+
+            <tr><td>PyramidKV (Base)</td><td>33.52</td><td>28.13</td><td>24.87</td><td>65.20</td><td>44.70</td><td>45.95</td><td>39.78</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>33.90</td><td>28.41</td><td>25.58</td><td>66.21</td><td>43.59</td><td>45.80</td><td>40.07</td></tr>
+            <tr class="bacon-row"><td>+BACON</td><td class="best">34.85 <span class="d-up">+1.33</span></td><td class="best">28.92 <span class="d-up">+0.79</span></td><td class="best">26.02 <span class="d-up">+1.15</span></td><td class="best">66.71 <span class="d-up">+1.51</span></td><td class="best">44.75 <span class="d-up">+0.05</span></td><td class="best">46.43 <span class="d-up">+0.48</span></td><td class="best">40.74 <span class="d-up">+0.96</span></td></tr>
+
+            <tr><td rowspan="9">512</td><td>SnapKV (Base)</td><td>33.25</td><td>26.82</td><td>23.65</td><td>64.48</td><td>45.15</td><td>45.41</td><td>39.11</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>33.08</td><td>27.12</td><td>24.40</td><td>65.19</td><td>45.15</td><td>45.61</td><td>39.43</td></tr>
+            <tr class="bacon-row"><td>+BACON</td><td class="best">34.06 <span class="d-up">+0.81</span></td><td class="best">27.50 <span class="d-up">+0.68</span></td><td class="best">24.54 <span class="d-up">+0.89</span></td><td class="best">66.09 <span class="d-up">+1.61</span></td><td class="best">45.32 <span class="d-up">+0.17</span></td><td class="best">45.91 <span class="d-up">+0.50</span></td><td class="best">39.94 <span class="d-up">+0.83</span></td></tr>
+
+            <tr><td>AdaKV (Base)</td><td>33.33</td><td>27.23</td><td>23.80</td><td>64.70</td><td>45.31</td><td>45.86</td><td>39.35</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>33.52</td><td>27.48</td><td>24.27</td><td>65.30</td><td>45.06</td><td>46.15</td><td>39.63</td></tr>
+            <tr class="bacon-row"><td>+BACON</td><td class="best">34.06 <span class="d-up">+0.73</span></td><td class="best">27.54 <span class="d-up">+0.31</span></td><td class="best">24.60 <span class="d-up">+0.80</span></td><td class="best">66.55 <span class="d-up">+1.85</span></td><td class="best">45.39 <span class="d-up">+0.08</span></td><td class="best">45.89 <span class="d-up">+0.03</span></td><td class="best">40.05 <span class="d-up">+0.70</span></td></tr>
+
+            <tr><td>PyramidKV (Base)</td><td>31.92</td><td>26.95</td><td>23.39</td><td>64.26</td><td>44.58</td><td>44.45</td><td>38.60</td></tr>
+            <tr class="mix-row"><td>+MixKV</td><td>32.09</td><td>26.69</td><td>23.89</td><td>64.88</td><td>44.80</td><td>44.80</td><td>38.86</td></tr>
+            <tr class="bacon-row"><td>+BACON</td><td class="best">32.83 <span class="d-up">+0.91</span></td><td class="best">27.62 <span class="d-up">+0.67</span></td><td class="best">23.96 <span class="d-up">+0.57</span></td><td class="best">65.97 <span class="d-up">+1.71</span></td><td class="best">45.07 <span class="d-up">+0.49</span></td><td class="best">45.14 <span class="d-up">+0.69</span></td><td class="best">39.47 <span class="d-up">+0.87</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-caption">
+        Category averages were computed from the per-task numbers in the paper; the final
+        column matches the table average.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- BibTeX -->
+<section class="section section-tinted" id="bibtex">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">BibTeX</h2>
+    <pre class="bibtex-box"><code>@article{chen2026bacon,
+  title  = {Last But Not Least: Boundary Attention Calibration for Multimodal KV Cache Compression},
+  author = {Chen, Tianhao and Wu, Yuheng and Yao, Kelu and Xu, Xiaogang and Hu, Xiaobin and Lee, Dongman},
+  year   = {2026},
+  eprint = {2606.14782},
+  archivePrefix = {arXiv}
+}</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container is-max-desktop">
+    <div class="content has-text-centered">
+      <p>
+        Page template adapted from
+        <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>
+        (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license">CC BY-SA 4.0</a>).
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script src="./static/js/index.js"></script>
+</body>
+</html>

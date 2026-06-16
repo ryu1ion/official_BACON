@@ -22,20 +22,9 @@ under the most aggressive cache budget, with no extra inference cost.
 
 The code is **not yet public**. We will release the full implementation,
 training-free integration scripts for the supported MLLMs (LLaVA-NeXT,
-InternVL3, Qwen2-VL, Qwen3-VL-30B-A3B), and the evaluation pipelines for
-DocVQA / TextVQA / ChartQA / MMMU / TextCaps / VATEX / NextQA / ScreenSpot /
-LongBench **after the review process is complete**.
+InternVL3, Qwen2-VL, Qwen3-VL-30B-A3B), and the evaluation pipelines **after the review process is complete**.
 
 Watch / star the repo to be notified when the code lands.
-
-## Project Page
-
-The full project page — figures, motivation analysis, method overview, and
-the experiment tables — is hosted at:
-
-**https://ryu1ion.github.io/official_BACON/**
-
-It is built from the `gh-pages` branch of this repository.
 
 ## Citation
 

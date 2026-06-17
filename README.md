@@ -37,8 +37,3 @@ Watch / star the repo to be notified when the code lands.
   archivePrefix = {arXiv}
 }
 ```
-
-## Contact
-
-For questions about the paper, please reach out to the corresponding authors:
-**Xiaobin Hu** and **Dongman Lee**.

@@ -1,0 +1,3 @@
+group: vatex
+task:
+  - vatex_test

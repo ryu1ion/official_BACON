@@ -1,0 +1,31 @@
+task: "vatex_test"
+dataset_name: vatex_test
+test_split: test
+output_type: generate_until
+process_docs: !function utils.vatex_filter_to_subset
+doc_to_visual: !function utils.vatex_doc_to_visual
+doc_to_text: !function utils.vatex_doc_to_text
+doc_to_target: !function utils.vatex_doc_to_target
+process_results: !function utils.vatex_process_results
+generation_kwargs:
+  max_new_tokens: 128
+  temperature: 0.0
+  do_sample: false
+metric_list:
+  - metric: CIDEr
+    aggregation: !function utils.vatex_aggregate_cider
+    higher_is_better: true
+  - metric: Bleu_4
+    aggregation: !function utils.vatex_aggregate_bleu4
+    higher_is_better: true
+  - metric: METEOR
+    aggregation: !function utils.vatex_aggregate_meteor
+    higher_is_better: true
+  - metric: ROUGE_L
+    aggregation: !function utils.vatex_aggregate_rougel
+    higher_is_better: true
+include: _default_template_yaml
+lmms_eval_specific_kwargs:
+  default:
+    pre_prompt: ""
+    post_prompt: "\nDescribe the video in one sentence."

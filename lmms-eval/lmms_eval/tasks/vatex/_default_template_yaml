@@ -1,0 +1,7 @@
+dataset_path: lmms-lab/vatex_from_url
+dataset_kwargs:
+  token: True
+  video: True
+  cache_dir: vatex
+metadata:
+  version: 0.0.1

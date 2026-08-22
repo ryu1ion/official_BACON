@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools", "wheel", "packaging"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bacon"
+version = "0.1.0"
+description = "Boundary Attention CalibratiON for Multimodal KV Cache Compression"
+
+dependencies = [
+    "rouge",
+    "tokenizers",
+    "rouge_score",
+    "numpy==1.26.0",
+    "jieba==0.42.1",
+    "datasets",
+    "accelerate",
+    "tqdm==4.66.1",
+    "icetk==0.0.7",
+    "transformers==4.46.2",
+    "seaborn",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bacon*"]

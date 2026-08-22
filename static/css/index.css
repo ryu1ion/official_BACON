@@ -55,6 +55,10 @@ body {
   margin: 0 0.25rem;
 }
 
+.publication-authors .author-block.is-corresponding {
+  font-weight: 700;
+}
+
 .author-affil {
   margin-top: 0.6rem;
   color: #555;

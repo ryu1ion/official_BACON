@@ -15,7 +15,7 @@ Tianhao Chen<sup>1</sup>, Yuheng Wu<sup>1</sup>, Kelu Yao<sup>3</sup>, Xiaogang 
 <img src="https://img.shields.io/badge/EMNLP%202026-Main-blueviolet.svg" alt="EMNLP 2026 Main">
 </div>
 
-<p align="center">💡<i>  <strong>BACON</strong> — a training-free, plug-and-play attention-score calibration that recovers <strong>boundary-emergent evidence</strong> lost to observation-window aggregation, with <strong>no extra hyperparameter on the user side</strong>. </i></p>
+<p align="center">💡<i>  <strong>BACON</strong> — a training-free, plug-and-play attention-score calibration that recovers <strong>boundary-emergent evidence</strong> lost to observation-window aggregation. </i></p>
 
 ## 🔥 News
 
@@ -40,7 +40,7 @@ under the most aggressive cache budget, with no extra inference cost.
 ├── README.md
 ├── LICENSE
 ├── pyproject.toml
-├── bacon/                  # core: backbones, MixKV, BACON calibration
+├── bacon/                  
 │   ├── __init__.py
 │   ├── bacon_utils.py      # `compute_bacon_score`, `_bacon_q_pooled`, KV clusters
 │   ├── monkeypatch.py      # `replace_qwen` / `replace_qwen3vl` / `replace_mistral` / `replace_internvl`
@@ -49,7 +49,7 @@ under the most aggressive cache budget, with no extra inference cost.
 │   ├── qwen3_vl_model.py
 │   └── mistral_model.py
 ├── csrc/                   # optional CUDA kernel for flattened head-wise cache
-├── lmms-eval/              # evaluation harness (vendored, MixKV-compatible)
+├── lmms-eval/              # evaluation harness
 ├── visual_head/            # head-score priors (qwen.json, llava-*.json, …)
 ├── scripts/
 │   ├── eval/
@@ -69,11 +69,11 @@ under the most aggressive cache budget, with no extra inference cost.
 conda create -n bacon python=3.10 -y
 conda activate bacon
 
-# Required PyTorch / CUDA stack (matches MixKV).
+# Required PyTorch / CUDA stack.
 pip install packaging torch==2.5.1
 pip uninstall -y ninja && pip cache purge && pip install ninja --no-cache-dir
 
-# Optional flattened-cache CUDA kernel. Speeds up AdaKV / SparseMM decoding.
+# Optional flattened-cache CUDA kernel. 
 # If your GPU's virtual architecture differs, edit the `-arch` flag inside
 # csrc/build.py before running `make`.
 cd csrc && make
@@ -87,9 +87,6 @@ pip install qwen-vl-utils
 # Evaluation harness.
 cd lmms-eval && pip install -e . && cd ..
 ```
-
-If you skip the `csrc` step, BACON / MixKV / the baselines still run; you only
-lose the optimised flattened KV-cache update path used by AdaKV and SparseMM.
 
 ## 📦 Model and dataset preparation
 

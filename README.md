@@ -15,7 +15,7 @@ Tianhao Chen<sup>1</sup>, Yuheng Wu<sup>1</sup>, Kelu Yao<sup>3</sup>, Xiaogang 
 <img src="https://img.shields.io/badge/EMNLP%202026-Main-blueviolet.svg" alt="EMNLP 2026 Main">
 </div>
 
-<p align="center">💡<i>  <strong>BACON</strong> — a training-free, plug-and-play attention-score calibration that recovers <strong>boundary-emergent evidence</strong> lost to observation-window aggregation. </i></p>
+<p align="center">💡<i>  <strong>BACON</strong> — a plug-and-play attention score calibration mechanism that recovers <strong>boundary-emergent evidence</strong> lost to observation-window aggregation. </i></p>
 
 ## 🔥 News
 

@@ -2,7 +2,7 @@
 <h1> 🥓 Last But Not Least: Boundary Attention CalibratiON for Multimodal KV Cache Compression </h1>
 
 <p>
-Tianhao Chen<sup>1</sup>, Yuheng Wu<sup>1</sup>, Kelu Yao<sup>3</sup>, Xiaogang Xu<sup>4</sup>, <b>Xiaobin Hu</b><sup>2,&Dagger;</sup>, <b>Dongman Lee</b><sup>1,&Dagger;</sup>
+Tianhao Chen<sup>1</sup>, Yuheng Wu<sup>1</sup>, Kelu Yao<sup>3</sup>, Xiaogang Xu<sup>4</sup>, Xiaobin Hu<sup>2,&Dagger;</sup>, Dongman Lee<sup>1,&Dagger;</sup>
 </p>
 
 <p>

@@ -19,6 +19,7 @@ Tianhao Chen<sup>1</sup>, Yuheng Wu<sup>1</sup>, Kelu Yao<sup>3</sup>, Xiaogang 
 
 ## 🔥 News
 
+* **`2026.09.25`** BACON is selected as **Oral presentation** at the main conference.
 * **`2026.08.22`** Code released.
 * **`2026.08.21`** BACON is accepted to **EMNLP 2026 Main Conference**.
 
